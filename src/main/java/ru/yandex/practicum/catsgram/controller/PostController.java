@@ -1,6 +1,7 @@
 package ru.yandex.practicum.catsgram.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.Post;
@@ -28,7 +29,7 @@ public class PostController {
     @GetMapping("/{id}")
     @ResponseBody
     public Post findPostById(@PathVariable long id) {
-        Optional<Post> postOpt = postService.findUserPerId(id);
+        Optional<Post> postOpt = postService.findPostPerId(id);
         if (postOpt.isEmpty()) {
             throw new NotFoundException(String.format("Post with id %s was not found", id));
         }
@@ -36,6 +37,7 @@ public class PostController {
      }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Post create(@RequestBody Post post) {
         return postService.create(post);
     }

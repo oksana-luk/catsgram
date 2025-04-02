@@ -70,16 +70,10 @@ public class PostService {
     }
 
     private long getNextId() {
-//        long currentMaxId = posts.keySet()
-//                .stream()
-//                .mapToLong(id -> id)
-//                .max()
-//                .orElse(0);
-//        return ++currentMaxId;
         return ++globalId;
     }
 
-    public Optional<Post> findUserPerId(long id) {
+    public Optional<Post> findPostPerId(long id) {
        return  posts.values().stream()
                 .filter(p -> p.getId().equals(id))
                 .findFirst();
