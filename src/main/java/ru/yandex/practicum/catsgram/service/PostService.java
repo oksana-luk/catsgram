@@ -7,22 +7,37 @@ import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.model.User;
 
 import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
     private final UserService userService;
     private final Map<Long, Post> posts = new HashMap<>();
+    private static long globalId = 0;
 
     public PostService(UserService userService) {
         this.userService = userService;
     }
 
-    public Collection<Post> findAll() {
-        return posts.values();
+    public Collection<Post> findAll(int size, long fromId, String sort) {
+        if (fromId <= 0 || fromId > globalId) {
+            fromId = (globalId <= size) ? 1L : globalId - size;
+        }
+        long finalFromId = fromId;
+        long finalToId = fromId + size - 1;
+
+        SortOrder sortOrder = SortOrder.from(sort);
+
+        Comparator<Post> comparator = Comparator.comparingLong(Post::getId);
+        if (sortOrder == SortOrder.DESCENDING) {
+            comparator = comparator.reversed();
+        }
+
+        return posts.values().stream()
+                .filter(post -> post.getId() >= finalFromId && post.getId() <= finalToId)
+                .sorted(comparator)
+                .collect(Collectors.toList());
     }
 
     public Post create(Post post) {
@@ -55,12 +70,13 @@ public class PostService {
     }
 
     private long getNextId() {
-        long currentMaxId = posts.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+//        long currentMaxId = posts.keySet()
+//                .stream()
+//                .mapToLong(id -> id)
+//                .max()
+//                .orElse(0);
+//        return ++currentMaxId;
+        return ++globalId;
     }
 
     public Optional<Post> findUserPerId(long id) {
