@@ -21,8 +21,14 @@ public class PostService {
     }
 
     public Collection<Post> findAll(int size, long fromId, String sort) {
-        if (fromId <= 0 || fromId > globalId) {
-            fromId = (globalId <= size) ? 1L : globalId - size;
+        if (globalId == 0) {
+            return new ArrayList<>();
+        }
+        if (fromId == 0) {
+            fromId = 1L;
+        }
+        if (fromId > globalId) {
+            return new ArrayList<>();
         }
         long finalFromId = fromId;
         long finalToId = fromId + size - 1;
