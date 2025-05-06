@@ -4,9 +4,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
 import ru.yandex.practicum.catsgram.model.Post;
-import ru.yandex.practicum.catsgram.model.User;
 
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,16 +45,17 @@ public class PostService {
     }
 
     public Post create(Post post) {
-        if (post.getDescription() == null || post.getDescription().isBlank()) {
-            throw new ConditionsNotMetException("Description cannot be empty");
-        }
-        Optional<User> userOpt = userService.findUserPerId(post.getAuthorId());
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException(String.format("An author with id = %d not found", post.getAuthorId()));
-        }
-        post.setId(getNextId());
-        post.setPostDate(Instant.now());
-        posts.put(post.getId(), post);
+//        if (post.getDescription() == null || post.getDescription().isBlank()) {
+//            throw new ConditionsNotMetException("Description cannot be empty");
+//        }
+//        Optional<User> userOpt = userService.findUserPerId(post.getAuthorId());
+//        if (userOpt.isEmpty()) {
+//            throw new NotFoundException(String.format("An author with id = %d not found", post.getAuthorId()));
+//        }
+//        post.setId(getNextId());
+//        post.setPostDate(Instant.now());
+//        posts.put(post.getId(), post);
+//
         return post;
     }
 

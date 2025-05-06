@@ -3,12 +3,12 @@ package ru.yandex.practicum.catsgram.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.catsgram.exception.NotFoundException;
-import ru.yandex.practicum.catsgram.model.User;
+import ru.yandex.practicum.catsgram.dto.NewUserRequest;
+import ru.yandex.practicum.catsgram.dto.UpdateUserRequest;
+import ru.yandex.practicum.catsgram.dto.UserDto;
 import ru.yandex.practicum.catsgram.service.UserService;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
@@ -21,28 +21,26 @@ public class UserController {
     }
 
     @GetMapping
-    public Collection<User> finsAll() {
-        return userService.finsAll();
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<UserDto> findAll() {
+        return userService.getUsers();
     }
 
     @GetMapping("/{id}")
-    @ResponseBody
-    public User getUserById(@PathVariable long id) {
-        Optional<User> userOpt = userService.findUserPerId(id);
-        if (userOpt.isEmpty()) {
-            throw new NotFoundException(String.format("Not found user with id %s", id));
-        }
-        return userOpt.get();
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto getUserById(@PathVariable long id) {
+        return userService.findUserPerId(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public User createUser(@RequestBody User user) {
-         return userService.createUser(user);
+    public UserDto createUser(@RequestBody NewUserRequest request) {
+         return userService.createUser(request);
     }
 
-    @PutMapping
-    public User updateUser(@RequestBody User user) {
-        return userService.updateUser(user);
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDto updateUser(@PathVariable long id, @RequestBody UpdateUserRequest request) {
+        return userService.updateUser(id, request);
     }
 }
