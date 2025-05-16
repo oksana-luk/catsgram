@@ -2,8 +2,6 @@ package ru.yandex.practicum.catsgram.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-//import ru.yandex.practicum.catsgram.dto.NewUserRequest;
-//import ru.yandex.practicum.catsgram.dto.UpdateUserRequest;
 import ru.yandex.practicum.catsgram.dto.NewUserRequest;
 import ru.yandex.practicum.catsgram.dto.UpdateUserRequest;
 import ru.yandex.practicum.catsgram.dto.UserDto;

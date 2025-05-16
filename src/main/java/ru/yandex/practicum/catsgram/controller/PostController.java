@@ -3,13 +3,13 @@ package ru.yandex.practicum.catsgram.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.catsgram.exception.NotFoundException;
+import ru.yandex.practicum.catsgram.dto.NewPostRequest;
+import ru.yandex.practicum.catsgram.dto.PostDto;
+import ru.yandex.practicum.catsgram.dto.UpdatePostRequest;
 import ru.yandex.practicum.catsgram.exception.ParameterNotValidException;
-import ru.yandex.practicum.catsgram.model.Post;
 import ru.yandex.practicum.catsgram.service.PostService;
 
 import java.util.Collection;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/posts")
@@ -22,7 +22,7 @@ public class PostController {
     }
 
     @GetMapping
-    public Collection<Post> findAll(@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "0") long from,
+    public Collection<PostDto> findAll(@RequestParam(defaultValue = "10") int size, @RequestParam(defaultValue = "0") long from,
                                     @RequestParam(defaultValue = "asc") String sort) {
         if (!sort.equals("asc") & !sort.equals("desc")) {
             throw new ParameterNotValidException("sort", "Input sort : " + sort + ". The sort parameter can be set to asc (ascending) or desc (descending).");
@@ -38,23 +38,19 @@ public class PostController {
 
     @GetMapping("/{id}")
     @ResponseBody
-    public Post findPostById(@PathVariable long id) {
-        Optional<Post> postOpt = postService.findPostPerId(id);
-        if (postOpt.isEmpty()) {
-            throw new NotFoundException(String.format("Post with id %s was not found.", id));
-        }
-        return postOpt.get();
+    public PostDto findPostById(@PathVariable long id) {
+        return postService.findPostById(id);
      }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Post create(@RequestBody Post post) {
-        return postService.create(post);
+    public PostDto create(@RequestBody NewPostRequest newPostRequest) {
+        return postService.create(newPostRequest);
     }
 
-    @PutMapping
-    public Post update(@RequestBody Post newPost) {
-        return postService.update(newPost);
+    @PutMapping("/{id}")
+    @ResponseBody
+    public PostDto update(@PathVariable("id") long postId, @RequestBody UpdatePostRequest updatePostRequest) {
+        return postService.update(postId, updatePostRequest);
     }
-
  }

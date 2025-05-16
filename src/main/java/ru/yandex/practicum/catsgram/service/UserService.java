@@ -1,5 +1,7 @@
 package ru.yandex.practicum.catsgram.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.catsgram.dal.UserRepository;
 import ru.yandex.practicum.catsgram.dto.NewUserRequest;
@@ -14,13 +16,11 @@ import ru.yandex.practicum.catsgram.model.User;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     public List<UserDto> getUsers() {
         return userRepository.findAll()
@@ -28,6 +28,7 @@ public class UserService {
                 .map(UserMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
+
     public UserDto createUser(NewUserRequest request) {
         if (request.getEmail() == null || request.getEmail().isBlank()) {
             throw new ConditionsNotMetException("Email must be provided");
@@ -43,10 +44,6 @@ public class UserService {
     }
 
     public UserDto updateUser(long userId, UpdateUserRequest request) {
-//        Optional<User> alreadyExistUser = userRepository.findByEmail(request.getEmail());
-//        if (alreadyExistUser.isPresent()) {
-//            throw new DuplicatedDataException("This email is already in use");
-//        }
         User updatedUser = userRepository.findById(userId)
                 .map(user -> UserMapper.updateUserFields(user, request))
                 .orElseThrow(() -> new NotFoundException("No user found"));
