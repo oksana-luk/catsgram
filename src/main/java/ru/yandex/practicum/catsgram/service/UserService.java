@@ -1,79 +1,60 @@
 package ru.yandex.practicum.catsgram.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.catsgram.dal.UserRepository;
+import ru.yandex.practicum.catsgram.dto.NewUserRequest;
+import ru.yandex.practicum.catsgram.dto.UpdateUserRequest;
+import ru.yandex.practicum.catsgram.dto.UserDto;
 import ru.yandex.practicum.catsgram.exception.ConditionsNotMetException;
 import ru.yandex.practicum.catsgram.exception.DuplicatedDataException;
 import ru.yandex.practicum.catsgram.exception.NotFoundException;
+import ru.yandex.practicum.catsgram.mapper.UserMapper;
 import ru.yandex.practicum.catsgram.model.User;
 
-import java.time.Instant;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    private final Map<Long, User> users = new HashMap<>();
-    private final Map<String, User> usersEmail = new HashMap<>();
+    private final UserRepository userRepository;
 
-    public Collection<User> finsAll() {
-        return users.values();
+    public List<UserDto> getUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserMapper::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
-    public User createUser(User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
+    public UserDto createUser(NewUserRequest request) {
+        if (request.getEmail() == null || request.getEmail().isBlank()) {
             throw new ConditionsNotMetException("Email must be provided");
         }
-        if (usersEmail.containsKey(user.getEmail())) {
+        Optional<User> alreadyExistUser = userRepository.findByEmail(request.getEmail());
+        if (alreadyExistUser.isPresent()) {
             throw new DuplicatedDataException("This email is already in use");
         }
-        user.setId(getNextId());
-        user.setRegistrationDate(Instant.now());
-        users.put(user.getId(), user);
-        usersEmail.put(user.getEmail(), user);
-        return user;
+
+        User user = UserMapper.mapToUser(request);
+        user = userRepository.save(user);
+        return UserMapper.mapToUserDto(user);
     }
 
-    public User updateUser(User user) {
-        if (user.getId() == null) {
-            throw new ConditionsNotMetException("Id must be specified");
-        }
-        if (!users.containsKey(user.getId())) {
-            throw new NotFoundException("No user found with this Id");
-        }
-        User findedUser = users.get(user.getId());
-        if (!user.getEmail().isBlank() && !findedUser.getEmail().equals(user.getEmail())
-                && usersEmail.containsKey(user.getEmail())) {
-            throw new DuplicatedDataException("This email is already in use");
-        }
-        if (user.getUserName() == null || !user.getUserName().isBlank()) {
-            findedUser.setUserName(user.getUserName());
-        }
-        if (user.getPassword() == null || !user.getPassword().isBlank()) {
-            findedUser.setPassword(user.getPassword());
-        }
-        if (user.getEmail() == null || !findedUser.getEmail().equals(user.getEmail())) {
-            usersEmail.remove(findedUser.getEmail());
-            findedUser.setEmail(user.getEmail());
-            usersEmail.put(findedUser.getEmail(), findedUser);
-        }
-        return findedUser;
+    public UserDto updateUser(long userId, UpdateUserRequest request) {
+        User updatedUser = userRepository.findById(userId)
+                .map(user -> UserMapper.updateUserFields(user, request))
+                .orElseThrow(() -> new NotFoundException("No user found"));
+        updatedUser = userRepository.update(updatedUser);
+        return UserMapper.mapToUserDto(updatedUser);
     }
 
-    private long getNextId() {
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
-    }
-
-    public Optional<User> findUserPerId(long id) {
-        return users.values().stream()
-                .filter(user -> user.getId().equals(id))
-                .findFirst();
+    public UserDto findUserPerId(long userId) {
+       return userRepository.findById(userId)
+                .map(UserMapper::mapToUserDto)
+                .orElseThrow(() -> new NotFoundException("User with ID " + userId + "not found"));
     }
 }
 
